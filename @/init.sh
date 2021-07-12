@@ -1,9 +1,5 @@
-#!/bin/bash
-<<EOF
-apt update && apt install curl jq -y
-bash /app/init.sh
-EOF
-set -euo pipefail
+#!/bin/env bash
+set -Eeuo pipefail
 
 function main(){
     local affilate=2
@@ -15,7 +11,7 @@ function main(){
             read_schedule  "$affilate" "$date" "$doctor_id" | while read schedule; do
                 local time=$(echo $schedule | jq --raw-output ".time")
                 local shortTime=$(echo $(echo $time | cut -d: -f1):$(echo $time | cut -d: -f2))
-                echo "$date $first_name $last_name $shortTime"
+                echo "$date $first_name $last_name $shortTime" | tee -a /data/log.txt
             done
         done
     done
@@ -23,7 +19,7 @@ function main(){
 
 
 function read_dates(){
-    curl -s "http://reg.npcpn.ru/api/appointment/appointableDates?affilateId=$1" | jq --raw-output '.[]' | while read str; do
+    curl -s "https://reg.npcpn.ru/api/appointment/appointableDates?affilateId=$1" | jq --raw-output '.[]' | while read str; do
         local year=$(echo $str | cut -d- -f1)
         local month=$(echo $str | cut -d- -f2)
         local date=$(echo $str | cut -d- -f3)
@@ -32,11 +28,11 @@ function read_dates(){
 }
 
 function read_doctors(){
-    curl -s "http://reg.npcpn.ru/api/appointment/appointableDoctors?affilateId=$1&date=$2" | jq -c '.[]' 
+    curl -s "https://reg.npcpn.ru/api/appointment/appointableDoctors?affilateId=$1&date=$2" | jq -c '.[]' 
 }
 
 function read_schedule(){
-    curl -s "http://reg.npcpn.ru/api/appointment/appointableSeances?affilateId=$1&date=$2&doctorId=$3" | jq -c '.[]' 
+    curl -s "https://reg.npcpn.ru/api/appointment/appointableSeances?affilateId=$1&date=$2&doctorId=$3" | jq -c '.[]' 
 }
 
 main
