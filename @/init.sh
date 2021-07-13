@@ -8,11 +8,13 @@ function main(){
             local doctor_id=$(echo $doctor | jq --raw-output ".id")
             local last_name=$(echo $doctor | jq --raw-output ".lastName")
             local first_name=$(echo $doctor | jq --raw-output ".firstName")
+            echo -n "$date $first_name $last_name: "
             read_schedule  "$affilate" "$date" "$doctor_id" | while read schedule; do
                 local time=$(echo $schedule | jq --raw-output ".time")
                 local shortTime=$(echo $(echo $time | cut -d: -f1):$(echo $time | cut -d: -f2))
-                echo "$date $first_name $last_name $shortTime" | tee -a /data/log.txt
+                echo -n "$shortTime "
             done
+            echo
         done
     done
 }
